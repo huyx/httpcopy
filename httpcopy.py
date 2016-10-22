@@ -109,22 +109,24 @@ def check_http_files(ready_files):
 
         # 检查哪个文件是 http 请求，哪个文件是 http 响应
         if RE_HTTP_REQ.match(line) and RE_HTTP_RESP.match(peer_line):
-            url = line.split(' ')[1]
+            request_line = line
             request_file = fn
             response_file = peer_fn
         elif RE_HTTP_REQ.match(peer_line) and RE_HTTP_RESP.match(line):
-            url = peer_line.split(' ')[1]
+            request_line = peer_line
             request_file = peer_fn
             response_file = fn
         else:
             invalid_files.append(fn)
             invalid_files.append(peer_fn)
             continue
+
+        url = request_line.split(' ')[1]
         if config.url_prefix and not url.startswith(config.url_prefix):
             invalid_url_files.append(fn)
             invalid_url_files.append(peer_fn)
         else:
-            logger.info('转发: %s', line.rstrip())
+            logger.info('转发: %s', request_line.rstrip())
             http_files.append((request_file, response_file))
 
     move_files(invalid_url_files, config.data_dir_invalid_url)
